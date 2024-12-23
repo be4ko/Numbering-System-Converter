@@ -52,6 +52,5 @@ Error: 78 doesn’t belong to the 8 system.
 - Mohammed Ahmed
 - Sohaila
 
-
 ## License 📜
-This project is licensed under the MIT License.
+This project is licensed under the GPL-3.0 License.
