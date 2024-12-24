@@ -43,5 +43,9 @@
          li $v0,4
          la $a0,newline
          syscall
-        
+         
+         # arguments 
+         move $a0, $t0   # Pass current system to $a0
+         move $a1, $t1   # Pass the number to convert to $a1
+         move $a2, $t2   # Pass the new system to $a2
          
