@@ -50,13 +50,13 @@ main:
     # Arguments
     move $a1, $t0  # Current base
     move $a2, $t2  # New base
-
-    jal OtherToDecimal
-
-    # Print result
-    li $v0, 1
-    move $a0, $v1
-    syscall
+    
+    
+    # function OtherToDecimal
+    #jal OtherToDecimal
+    #li $v0, 1
+    #move $a0, $v1
+    #syscall
 
     # Exit
     li $v0, 10
