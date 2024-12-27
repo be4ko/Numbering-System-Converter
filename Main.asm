@@ -215,7 +215,7 @@ ReverseLoop:
     sb $t7, 0($t5)      # Store end character at right ( swap )
     sb $t6, 0($t1)      # Store start character at end ( swap )
     addi $t5, $t5, 1    
-    subi $t1, $t1, 1    
+    addi $t1, $t1, -1    
     j ReverseLoop
 
 ReverseDone:
