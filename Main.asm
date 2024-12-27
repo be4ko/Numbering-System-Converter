@@ -3,6 +3,7 @@ message1: .asciiz "Enter the current system: "
 message2: .asciiz "Enter the number: "
 message3: .asciiz "Enter the new system: "
 message4: .asciiz "The number in the new system: "
+message5: .asciiz "Error: Invalid input number for the specified system\n"
 newline:  .asciiz "\n"
 buffer:   .space 32  # Buffer to store string input
 
@@ -29,8 +30,13 @@ main:
     li $a1, 32  # Max buffer size
     syscall
 
+    # Validate input
+    move $t7, $a0        
+    jal ValidateInput
+    beq $v0, $zero, InvalidInput  # If validation failed, jump to error
+
     # Pass the address of the input number to $a0
-    move $a3, $a0  # $a0 already points to buffer
+    move $a3, $t7  # $a0 already points to buffer
 
     # New system
     li $v0, 4
@@ -46,24 +52,21 @@ main:
     li $v0, 4
     la $a0, newline
     syscall
-
+    
     # number New system
     li $v0, 4
     la $a0, message4
     syscall
-
+    
     # Arguments
     move $a1, $t0  # Current base
     move $a2, $t2  # New base
     
-    
     # function OtherToDecimal
     jal OtherToDecimal
 
-	move $a0, $v1
-	jal DecimalToOther
-    
-    #jal DecimalToOther
+    move $a0, $v1
+    jal DecimalToOther
     
     li $v0, 4
     move $a0, $v1
@@ -73,12 +76,64 @@ main:
     li $v0, 10
     syscall
 
+InvalidInput:
+    li $v0, 4
+    la $a0, message5
+    syscall
+    
+    # Exit program
+    li $v0, 10
+    syscall
+##########################
+#   Validation function  #
+##########################
+ValidateInput:
+    move $t8, $t7        
+    li $v0, 1           
+
+ValidateLoop:
+    lb $t1, ($t8)       
+    beqz $t1, ValidateEnd  
+    beq $t1, 10, ValidateEnd  
+    
+    # Convert character to numeric value
+    li $t3, '0'
+    li $t4, '9'
+    li $t5, 'A'
+    li $t6, 'F'
+    
+    # Check if character is digit
+    blt $t1, $t3, InvalidChar
+    ble $t1, $t4, IsNumericDigit
+    blt $t1, $t5, InvalidChar
+    ble $t1, $t6, IsHexDigit
+    j InvalidChar
+    
+IsNumericDigit:
+    sub $t2, $t1, $t3    
+    bge $t2, $t0, InvalidChar  
+    j NexttChar
+
+IsHexDigit:
+    sub $t2, $t1, $t5    
+    addi $t2, $t2, 10
+    bge $t2, $t0, InvalidChar  
+    
+NexttChar:
+    addi $t8, $t8, 1     
+    j ValidateLoop
+
+InvalidChar:
+    li $v0, 0           
+    
+ValidateEnd:
+    jr $ra
+
 # Inputs:
 #   $a0 - the address of the number to be converted (as a string)
 #   $a1 - the base of the number (2, 8, or 16)
 # Output:
 #   $v1 - the decimal equivalent of the input number
-
 OtherToDecimal:
     li $v1, 0                 
     move $t0, $a3             
@@ -93,11 +148,11 @@ ProcessLoop:
     li $t5, 'A'              
     li $t6, 'F'              
 
-    blt $t1, $t3, NextChar    # If char < '0', skip
+    blt $t1, $t3, NextCharr    # If char < '0', skip
     ble $t1, $t4, IsDigit     # If char is between '0' and '9', process as digit
-    blt $t1, $t5, NextChar    # If char < 'A', skip
+    blt $t1, $t5, NextCharr   # If char < 'A', skip
     ble $t1, $t6, IsHex       # If char is between 'A' and 'F', process as hex
-    j NextChar                # Skip other characters
+    j NextCharr                # Skip other characters
 
 IsDigit:
     sub $t2, $t1, $t3         # Convert '0'-'9' to 0-9
@@ -112,13 +167,12 @@ AddToResult:
     mul $v1, $v1, $a1         # Multiply result by base
     add $v1, $v1, $t2         # Add current digit value
 
-NextChar:
+NextCharr:
     addi $t0, $t0, 1          # Advance to next character
     j ProcessLoop
 
 ConversionDone:
     jr $ra                    # Return to the caller
-    
 
 ############################################################################################
 ############################################################################################
@@ -151,7 +205,7 @@ StoreChar:
     j Loop
 
 Done:
-    sb $zero, 0($t1)    # ADd Null terminator
+    sb $zero, 0($t1)    # Add Null terminator
     sub $t1, $t1, 1     # Step back
     move $t5, $a3       # Start of the buffer
 ReverseLoop:
