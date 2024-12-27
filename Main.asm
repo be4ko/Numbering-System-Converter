@@ -53,10 +53,16 @@ main:
     
     
     # function OtherToDecimal
-    #jal OtherToDecimal
-    #li $v0, 1
-    #move $a0, $v1
-    #syscall
+    jal OtherToDecimal
+
+	move $a0, $v1
+	jal DecimalToOther
+    
+    #jal DecimalToOther
+    
+    li $v0, 4
+    move $a0, $v1
+    syscall
 
     # Exit
     li $v0, 10
@@ -107,3 +113,52 @@ NextChar:
 
 ConversionDone:
     jr $ra                    # Return to the caller
+    
+
+############################################################################################
+############################################################################################
+############################################################################################
+############################################################################################
+
+DecimalToOther:
+    li $v1, 0          # Clear the result
+    move $t0, $a0      # The decimal value in $a0
+    move $t1, $a3      # The buffer address in $a3
+    li $t2, 0          # Buffer index
+    li $t4, 10
+Loop:
+    beqz $t0, Done     # If $t0 is 0, done
+    div $t0, $a2       # Divide $t0 by the base ($a2)
+    mfhi $t3           # Remainder from division
+    mflo $t0           # Quotient from division
+
+    # If remainder >= 10
+    blt $t3, $t4, ConvertDigitToChar
+    addi $t3, $t3, 55   # A - Z
+    j StoreChar
+
+ConvertDigitToChar:
+    addi $t3, $t3, 48   # to 0-9 
+
+StoreChar:
+    sb $t3, 0($t1)      # Store in the buffer
+    addi $t1, $t1, 1    # Increment 
+    j Loop
+
+Done:
+    sb $zero, 0($t1)    # ADd Null terminator
+    sub $t1, $t1, 1     # Step back
+    move $t5, $a3       # Start of the buffer
+ReverseLoop:
+    bge $t5, $t1, ReverseDone  # If start >= end go to ReverseDone
+    lb $t6, 0($t5)      # Load character from the right
+    lb $t7, 0($t1)      # Load character from the left
+    sb $t7, 0($t5)      # Store end character at right ( swap )
+    sb $t6, 0($t1)      # Store start character at end ( swap )
+    addi $t5, $t5, 1    
+    subi $t1, $t1, 1    
+    j ReverseLoop
+
+ReverseDone:
+    move $v1, $a3
+    jr $ra              # Return to the caller
