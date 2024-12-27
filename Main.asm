@@ -47,6 +47,11 @@ main:
     la $a0, newline
     syscall
 
+    # number New system
+    li $v0, 4
+    la $a0, message4
+    syscall
+
     # Arguments
     move $a1, $t0  # Current base
     move $a2, $t2  # New base
