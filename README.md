@@ -20,7 +20,7 @@ MARS Assembly Simulator: To write, test, and debug the assembly code.
 1. Setup MARS: Download and install the MARS simulator from its official website.
 2. Clone the Repository:
 ```bash
-git clone https://github.com/your-repo/numbering-system-converter.git
+git clone https://github.com/numbering-system-converter.git
 cd numbering-system-converter
 ```
 3. Open the Code: Load the assembly file in MARS.
